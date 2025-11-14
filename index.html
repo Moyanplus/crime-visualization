@@ -1,0 +1,1578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>US Crime Data Visualization (2020-2024)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            line-height: 1.6;
+            color: #ffffff;
+            background: #000000;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Grid background effect */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            text-align: center;
+            padding: 80px 20px 60px;
+            color: #ffffff;
+            animation: fadeInDown 1s ease;
+            border-bottom: 2px solid #555555;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 2px;
+            background: #ff0000;
+            animation: expandLine 2s ease-in-out infinite;
+        }
+
+        @keyframes expandLine {
+            0%, 100% { width: 0; }
+            50% { width: 300px; }
+        }
+
+        h1 {
+            font-size: 3.5em;
+            margin-bottom: 20px;
+            letter-spacing: 3px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        .glitch {
+            position: relative;
+            display: inline-block;
+        }
+
+        .subtitle {
+            font-size: 1.3em;
+            color: #ffffff;
+            font-weight: 300;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .date-range {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 12px 30px;
+            border: 2px solid #ffffff;
+            margin-top: 20px;
+            color: #ffffff;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .content {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #555555;
+            padding: 40px;
+            margin: 40px 0;
+            animation: fadeInUp 1s ease;
+            position: relative;
+        }
+
+        .content::before,
+        .content::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ffffff;
+        }
+
+        .content::before {
+            top: -2px;
+            left: -2px;
+            border-right: none;
+            border-bottom: none;
+        }
+
+        .content::after {
+            bottom: -2px;
+            right: -2px;
+            border-left: none;
+            border-top: none;
+        }
+
+        .section {
+            margin-bottom: 50px;
+        }
+
+        h2 {
+            color: #ffffff;
+            margin-bottom: 20px;
+            font-size: 2em;
+            border-bottom: 2px solid #555555;
+            padding-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .description {
+            font-size: 1.1em;
+            color: #ffffff;
+            margin-bottom: 30px;
+            line-height: 1.8;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .visualizations-grid {
+		    display: grid;
+		    grid-template-columns: repeat(2, 1fr); 
+		    gap: 30px;
+		    margin-top: 30px;
+		}
+
+        .viz-card {
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #555555;
+            padding: 30px;
+            color: #ffffff;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            display: block;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .viz-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .viz-card:hover::before {
+            left: 100%;
+        }
+
+        .viz-card:hover {
+            border-color: #ffffff;
+            transform: translateY(-5px);
+        }
+
+        .viz-card h3 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .viz-card:hover h3 {
+            color: #cccccc;
+        }
+
+        .viz-card p {
+            opacity: 0.9;
+            line-height: 1.6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .viz-note {
+            font-size: 0.85em;
+            color: #cccccc;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .viz-select {
+            background: rgba(0, 0, 0, 0.8);
+            color: #ffffff;
+            border: 1px solid #555555;
+            padding: 4px 8px;
+            font-size: 0.85em;
+            margin-left: 6px;
+        }
+
+        .what-grid-wrapper {
+            position: relative;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 5;
+            font-size: 1em;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .loading-overlay span {
+            padding: 12px 20px;
+            border: 1px solid #ffffff;
+            color: #ffffff;
+        }
+
+        .filter-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 14px;
+            border: 1px solid #ffffff;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+            font-size: 0.85em;
+            margin-bottom: 18px;
+        }
+
+        .filter-chip button {
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1em;
+            line-height: 1;
+        }
+
+        .chart {
+            width: 100%;
+            min-height: 420px;
+            height: 100%;
+        }
+
+        .viz-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .feature {
+            padding: 25px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid #555555;
+            border-left: 4px solid #ffffff;
+            transition: all 0.3s ease;
+        }
+
+        .feature:hover {
+            border-color: #ffffff;
+            transform: translateX(5px);
+        }
+
+        .feature h3 {
+            color: #ffffff;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            font-size: 1.1em;
+        }
+
+        .feature p {
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: #ffffff;
+            border-top: 2px solid #555555;
+            margin-top: 40px;
+        }
+
+        .collapsed {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        .expanded {
+            display: block;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+        }
+        
+        .github-link {
+            display: inline-block;
+            background: transparent;
+            color: #ffffff;
+            padding: 12px 30px;
+            border: 2px solid #ffffff;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .github-link:hover {
+            background: #ffffff;
+            color: #000000;
+        }
+
+        .attributes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 25px;
+        }
+
+        .attr-category {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid #555555;
+            border-left: 4px solid #ffffff;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .attr-category:hover {
+            border-left-color: #cccccc;
+            transform: translateX(5px);
+        }
+
+        .attr-category h4 {
+            color: #ffffff;
+            font-size: 1em;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .attr-item {
+            font-size: 0.9em;
+            color: #ffffff;
+            margin-bottom: 8px;
+            line-height: 1.5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .attr-key {
+            color: #ffffff;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+        }
+
+        .map-container {
+            position: relative;
+            margin-top: 20px;
+        }
+
+        .map-overlay {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 10;
+        }
+
+        .fullscreen-btn {
+            display: inline-block;
+            background: rgba(0, 0, 0, 0.9);
+            color: #ffffff;
+            padding: 10px 20px;
+            border: 2px solid #ffffff;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .fullscreen-btn:hover {
+            background: #ffffff;
+            color: #000000;
+        }
+
+        .scanline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                rgba(255, 255, 255, 0) 50%,
+                rgba(0, 0, 0, 0.1) 50%
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+            animation: scanlines 8s linear infinite;
+            z-index: 999;
+        }
+
+		.viz-card img {
+		    cursor: pointer;
+		    transition: transform 0.3s ease;
+		}
+		
+		.viz-card img:hover {
+		    transform: scale(1.05);
+		}
+		
+		.image-modal {
+		    display: none;
+		    position: fixed;
+		    z-index: 1000;
+		    left: 0;
+		    top: 0;
+		    width: 100%;
+		    height: 100%;
+		    background-color: rgba(0,0,0,0.9);
+		    justify-content: center;
+		    align-items: center;
+		}
+		
+		.image-modal img {
+		    max-width: 90%;
+		    max-height: 90%;
+		    border: 3px solid #ffffff;
+		}
+		
+		.image-modal.show {
+		    display: flex;
+		    animation: fadeIn 0.3s ease;
+		}
+		
+		@keyframes fadeIn {
+		    from { opacity: 0; }
+		    to { opacity: 1; }
+		}
+		
+        @keyframes scanlines {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(4px); }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            }
+            
+            .content {
+                padding: 25px;
+            }
+            
+            .visualizations-grid {
+			    display: grid;
+			    grid-template-columns: repeat(2, 1fr); /* 2 columns */
+			    gap: 20px; /* spacing between charts */
+			    margin-top: 20px;
+			}
+        }
+    </style>
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+</head>
+<body>
+    <div class="scanline"></div>
+    
+    <div class="container">
+        <header>
+            <h1 class="glitch">US CRIME DATA</h1>
+            <p class="subtitle">— CS 6730: Data Vis Principles —</p>
+            <div class="date-range">[Team: SMOOTH CRIMINAL]</div>
+        </header>
+
+<div class="content" style="margin-top: 20px;">
+	    <section class="section">
+	        <h2>GLOBAL CONTROLS</h2>
+	        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; align-items: end; margin-bottom: 15px;">
+	            <!-- Date Range -->
+	            <div>
+	                <h4 style="color: #ffffff; margin-bottom: 8px; font-size: 0.9em;">📅 DATE RANGE</h4>
+	                <div style="display: flex; align-items: center; gap: 8px;">
+                    <input type="month" id="startDate" value="2022-10" min="2020-01" max="2024-09" 
+                           style="padding: 6px; background: rgba(0,0,0,0.8); color: #ffffff; border: 1px solid #555555; font-size: 0.9em; flex: 1;">
+	                    <span style="color: #ffffff; font-size: 0.9em;">to</span>
+	                    <input type="month" id="endDate" value="2024-09" min="2020-01" max="2024-09"
+	                           style="padding: 6px; background: rgba(0,0,0,0.8); color: #ffffff; border: 1px solid #555555; font-size: 0.9em; flex: 1;">
+	                </div>
+	            </div>
+	            
+            <!-- Crime Type -->
+            <div>
+                <h4 style="color: #ffffff; margin-bottom: 8px; font-size: 0.9em;">🔍 CRIME TYPE</h4>
+					<select id="crimeTypeFilter" style="padding: 6px; background: rgba(0,0,0,0.8); color: #ffffff; border: 1px solid #555555; width: 100%; font-size: 0.9em;">
+					    <option value="all">All Crime Types</option>
+					</select>
+            </div>
+	            
+	            <!-- Demographics -->
+	            <div>
+	                <h4 style="color: #ffffff; margin-bottom: 8px; font-size: 0.9em;">👥 VICTIM SEX</h4>
+	                <div style="display: flex; gap: 15px;">
+	                    <label style="color: #ffffff; font-size: 0.9em; cursor: pointer;">
+	                        <input type="checkbox" id="filterMale" checked> Male
+	                    </label>
+	                    <label style="color: #ffffff; font-size: 0.9em; cursor: pointer;">
+	                        <input type="checkbox" id="filterFemale" checked> Female
+	                    </label>
+	                    <label style="color: #ffffff; font-size: 0.9em; cursor: pointer;">
+	                        <input type="checkbox" id="filterOther" checked> Other
+	                    </label>
+	                </div>
+	            </div>
+	        </div>
+	        
+	        <div style="display: flex; gap: 10px;">
+	            <button id="applyFilters" style="padding: 8px 20px; background: transparent; color: #ffffff; border: 2px solid #ffffff; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; font-size: 0.9em;">
+	                >> APPLY
+	            </button>
+	            <button id="resetFilters" style="padding: 8px 20px; background: transparent; color: #ffffff; border: 2px solid #555555; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; font-size: 0.9em;">
+	                RESET
+	            </button>
+	        </div>
+	    </section>
+	</div>
+        <div class="content">
+            <section class="section">
+                <h2>MISSION BRIEFING</h2>
+                <p class="description">
+Crime in the United States affects community safety, policy, and urban planning, yet existing tools focus on isolated incidents and aggregated statistics remain hard to interpret. Our project bridges this gap by visualizing crime data from 2020—2024 to reveal spatial and temporal patterns, with the goal to make complex data intuitive and actionable for researchers, policymakers, and the public.
+                </p>
+            </section>
+
+            <section class="section">
+                <h2>DATA ATTRIBUTES</h2>
+                    <p class="description">
+                        The dataset contains 28 attributes describing each crime incident, covering core identifiers, classification, victim details, and spatial context.
+                    </p>
+                    <div class="attributes-grid">
+                        <div class="attr-category">
+                            <h4>CORE CRIME INFORMATION</h4>
+                            <div class="attr-item"><span class="attr-key">DR_NO:</span> Unique identifier for each reported crime</div>
+                            <div class="attr-item"><span class="attr-key">Date Rptd:</span> Date the crime was reported</div>
+                            <div class="attr-item"><span class="attr-key">DATE OCC:</span> Date the crime occurred</div>
+                            <div class="attr-item"><span class="attr-key">TIME OCC:</span> Time the crime occurred</div>
+                            <div class="attr-item"><span class="attr-key">AREA:</span> Geographic area or precinct</div>
+                            <div class="attr-item"><span class="attr-key">AREA NAME:</span> Descriptive name of the area</div>
+                            <div class="attr-item"><span class="attr-key">Rpt Dist No:</span> Reporting district number</div>
+                        </div>
+                        
+                        <div class="attr-category">
+                            <h4>CRIME CLASSIFICATION</h4>
+                            <div class="attr-item"><span class="attr-key">Part 1-2:</span> Severity classification (Part 1: serious, Part 2: less serious)</div>
+                            <div class="attr-item"><span class="attr-key">Crm Cd:</span> Crime code or classification number</div>
+                            <div class="attr-item"><span class="attr-key">Crm Cd Desc:</span> Description of the crime code</div>
+                            <div class="attr-item"><span class="attr-key">Mocodes:</span> Motivations or circumstances</div>
+                        </div>
+                        
+                        <div class="attr-category">
+                            <h4>VICTIM INFORMATION</h4>
+                            <div class="attr-item"><span class="attr-key">Vict Age:</span> Age of the victim</div>
+                            <div class="attr-item"><span class="attr-key">Vict Sex:</span> Sex of the victim</div>
+                            <div class="attr-item"><span class="attr-key">Vict Descent:</span> Racial or ethnic background</div>
+                        </div>
+                        
+                        <div class="attr-category">
+                            <h4>LOCATION & CONTEXT</h4>
+                            <div class="attr-item"><span class="attr-key">Premis Cd:</span> Premises code (e.g., residential, commercial)</div>
+                            <div class="attr-item"><span class="attr-key">Premis Desc:</span> Description of the premises</div>
+                            <div class="attr-item"><span class="attr-key">Weapon Used Cd:</span> Code for weapon used (if any)</div>
+                            <div class="attr-item"><span class="attr-key">Weapon Desc:</span> Description of the weapon</div>
+                        </div>
+                        
+                        <div class="attr-category">
+                            <h4>ADDITIONAL INFORMATION</h4>
+                            <div class="attr-item"><span class="attr-key">Status:</span> Current case status (e.g., open, closed)</div>
+                            <div class="attr-item"><span class="attr-key">Status Desc:</span> Description of case status</div>
+                            <div class="attr-item"><span class="attr-key">Crm Cd 1-4:</span> Additional crime codes if applicable</div>
+                            <div class="attr-item"><span class="attr-key">LOCATION:</span> General location of the crime</div>
+                            <div class="attr-item"><span class="attr-key">Cross Street:</span> Intersection or nearby street</div>
+                            <div class="attr-item"><span class="attr-key">LAT, LON:</span> GPS coordinates of crime location</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2>Where: Geographic Analysis</h2>
+                <div class="description">
+                    <p style="margin-bottom: 20px;">Interactive heatmap showing high-risk zones across LA sectors. Use mouse to pan and zoom for detailed tactical overview.</p>
+                </div>
+                <div class="map-container">
+                    <iframe src="la_crime_map.html" 
+                            frameborder="0" 
+                            style="width: 100%; height: 600px; border: 2px solid #555555; background: #000000;">
+                    </iframe>
+                    <div class="map-overlay">
+                        <a href="la_crime_map.html" target="_blank" class="fullscreen-btn">
+                            >> OPEN FULL SCREEN <<
+                        </a>
+                    </div>
+                </div>
+
+            </section>
+
+			<section class="section">
+			    <h2>When: TEMPORAL ANALYSIS</h2>
+			
+			    <div class="description">
+			        <ul>
+			            <li><strong>Hourly patterns:</strong> Peak criminal activity occurs around midday (12:00 PM), with lower crime rates between midnight and 7:00 AM, contrary to common perceptions about nighttime danger.</li>
+			            <li><strong>Weekly patterns:</strong> Fridays show the highest incidence of reported crimes.</li>
+			            <li><strong>Monthly patterns:</strong> January shows the highest crime levels.</li>
+			            <li><strong>Yearly trends:</strong> Crime incidents increased from 2020 through early 2022, peaked in 2022, then dramatically decreased beginning in 2024.</li>
+			        </ul>
+			    </div>
+			
+			    <div class="visualizations-grid">
+			        <div class="viz-card">
+			            <h3>Hourly Crime Patterns</h3>
+			            <img src="./images/hourly.jpg" alt="Hourly crime chart" style="width:100%; height:auto;">
+			        </div>
+			        <div class="viz-card">
+			            <h3>Weekly Crime Patterns</h3>
+			            <img src="./images/weekly.jpg" alt="Weekly crime chart" style="width:100%; height:auto;">
+			        </div>
+			        <div class="viz-card">
+			            <h3>Monthly Crime Patterns</h3>
+			            <img src="./images/monthly.jpg" alt="Monthly crime chart" style="width:100%; height:auto;">
+			        </div>
+			        <div class="viz-card">
+			            <h3>Yearly Crime Trends</h3>
+			            <img src="./images/yearly.jpg" alt="Yearly crime chart" style="width:100%; height:auto;">
+			        </div>
+			    </div>
+			</section>
+
+			<section class="section">
+			    <h2>WHAT: CATEGORICAL ANALYSIS</h2>
+			
+			    <div class="description">
+			        <ul>
+			            <li><strong>Crime types:</strong> Hover the Pareto bars to see how quickly the top incidents accumulate.</li>
+			            <li><strong>Hierarchies:</strong> Use the sunburst to drill from Part 1/Part 2 down to the leading offense descriptions.</li>
+			            <li><strong>Weapons & scenes:</strong> The heatmap highlights common weapon–premises pairings.</li>
+			            <li><strong>Case pipeline:</strong> The Sankey lays out how major offense types flow into status outcomes.</li>
+			        </ul>
+			    </div>
+                <div id="what-filter-chip" class="filter-chip" style="display:none;" aria-live="polite">
+                    <span id="what-filter-chip-text"></span>
+                    <button type="button" id="clearWhatFilter" aria-label="Clear linked filter">×</button>
+                </div>
+			
+                <div class="what-grid-wrapper">
+                    <div id="what-loading-overlay" class="loading-overlay" aria-live="polite">
+                        <span>Loading…</span>
+                    </div>
+			        <div class="visualizations-grid">
+			            <div class="viz-card">
+			                <h3>Crime Types Pareto</h3>
+			                <p class="viz-note">Hover to see cumulative share; select legend items to hide/show series.</p>
+			                <div id="crime-type-chart" class="chart" data-what-chart aria-label="Top crime types Pareto chart"></div>
+			            </div>
+			            <div class="viz-card">
+			                <h3>Severity to Offense Drilldown</h3>
+			                <p class="viz-note">Click Part 1/2 arcs to zoom into specific crime descriptions.</p>
+			                <div id="crime-hierarchy-chart" class="chart" data-what-chart aria-label="Crime hierarchy sunburst"></div>
+			            </div>
+			            <div class="viz-card">
+			                <h3>Weapons × Premises</h3>
+			                <div class="viz-note" style="display:flex; justify-content:space-between; gap:10px; align-items:center;">
+                                <span>Hover matrix cells to surface the most common situational pairings.</span>
+                                <label style="font-size:0.8em;">Sort
+                                    <select id="weaponSort" class="viz-select">
+                                        <option value="default">Default</option>
+                                        <option value="desc">By total</option>
+                                    </select>
+                                </label>
+                            </div>
+			                <div id="weapon-premise-chart" class="chart" data-what-chart aria-label="Weapon versus premises heatmap"></div>
+			            </div>
+			            <div class="viz-card">
+			                <h3>Status Pipeline</h3>
+                        <div class="viz-note" style="display:flex; justify-content:space-between; gap:10px; align-items:center;">
+                                <span>Trace how the selected or leading crimes flow into key LAPD status codes.</span>
+                                <label style="font-size:0.8em;">Status order
+                                    <select id="statusSort" class="viz-select">
+                                        <option value="default">Default</option>
+                                        <option value="desc">By total</option>
+                                    </select>
+                                </label>
+                            </div>
+			                <div id="status-sankey-chart" class="chart" data-what-chart aria-label="Crime status Sankey diagram"></div>
+			            </div>
+			        </div>
+                </div>
+				</section>
+				
+			<section class="section">
+				    <h2>WHO: DEMOGRAPHICS ANALYSIS</h2>
+				    
+				    <div class="description">
+				        <ul>
+							<li><strong>Victim gender distribution:</strong> Males comprise 47.0% of victims.</li>            
+							<li><strong>Age distribution patterns:</strong> Victims are generally young adults, with a median age of 30 and a mean age of 29.1. Ages range up to 99, and the wide interquartile range (44.0) indicates large variability in victim age.</li>
+							<li><strong>Population pyramid:</strong> todo.</li>
+				            <li><strong>Demographic mix by crime type:</strong> todo.</li>
+				        </ul>
+				    </div>
+				    
+				    <div class="visualizations-grid">
+						<div class="viz-card">
+					            <h3>Victim gender distribution</h3>
+					            <img src="./images/victims.jpg" alt="Victim demographics chart" style="width:100%; height:auto;">
+						</div>
+						<div class="viz-card">
+				            <h3>Age distribution patterns</h3>
+				            <img src="./images/age_distribution.jpg" alt="Age distribution chart" style="width:100%; height:auto;">
+				        </div>
+						<!--
+				        <div class="viz-card">
+				            <h3>Population pyramid</h3>
+				            <img src="./images/population_pyramid.jpg" alt="Population pyramid chart" style="width:100%; height:auto;">
+				        </div>
+				        <div class="viz-card">
+				            <h3>Demographic mix by crime type</h3>
+				            <img src="./images/demographic_mix.jpg" alt="Demographic mix chart" style="width:100%; height:auto;">
+				        </div>
+						-->
+				    </div>
+				
+				</section>			
+            <section class="section">
+                <h2>DATA SOURCES</h2>
+                <p class="description">
+                U.S. Crime Dataset (January 2020 — September 2024). Source: <a href="https://www.kaggle.com/datasets/arpitsinghaiml/u-s-crime-dataset" target="_blank" style="color: #ffffff; text-decoration: underline;">Kaggle</a>
+                </p>
+            </section>
+        </div>
+
+        <footer>
+            <p style="font-size: 1.2em; letter-spacing: 2px;">[ DATA VISUALIZATION TACTICAL UNIT ]</p>
+            <p style="margin-top: 10px; font-size: 0.9em; color: #ffffff;">OPERATIONAL TIMELINE: JAN 2020 — SEPT 2024</p>
+            <a href="https://github.com/ivy3h/crime-visualization.github.io" class="github-link" target="_blank">
+                >> ACCESS REPOSITORY <<
+            </a>
+        </footer>
+    </div>
+
+<footer style="text-align:center; margin-top:50px; padding:20px; color:#555; font-size:14px;">
+    <p><strong>Team Name:</strong> SMOOTH CRIMINAL</p>
+    <p><strong>Team Members:</strong> Chunzhen Hu, Ivy He, Yuxing Sun, Yangsheng Zhou, Muzhi Liu, Bei Liu</p>
+    <p style="margin-top:10px;">Georgia Institute of Technology · 2025</p>
+</footer>
+
+<div id="imageModal" class="image-modal" onclick="closeModal()">
+    <img id="modalImage" src="">
+</div>
+
+<script>
+const modal = document.getElementById("imageModal");
+const modalImg = document.getElementById("modalImage");
+
+document.querySelectorAll(".viz-card img").forEach(img => {
+    img.addEventListener("click", () => {
+        modalImg.src = img.src;
+        modal.classList.add("show");
+    });
+});
+
+function closeModal() {
+    modal.classList.remove("show");
+}
+
+function toggleAttributes() {
+    const section = document.getElementById("attributes");
+    const title = document.getElementById("attr-title");
+
+    if (section.classList.contains("collapsed")) {
+        section.classList.remove("collapsed");
+        section.classList.add("expanded");
+        title.innerHTML = "DATA ATTRIBUTES ▲";
+    } else {
+        section.classList.remove("expanded");
+        section.classList.add("collapsed");
+        title.innerHTML = "DATA ATTRIBUTES ▼";
+    }
+}
+
+function toggleTemporal() {
+    const section = document.getElementById("temporal-content");
+    const title = document.getElementById("temporal-title");
+
+    if (section.classList.contains("collapsed")) {
+        section.classList.remove("collapsed");
+        section.classList.add("expanded");
+        title.innerHTML = "TEMPORAL & CATEGORICAL ANALYSIS ▲";
+    } else {
+        section.classList.remove("expanded");
+        section.classList.add("collapsed");
+        title.innerHTML = "TEMPORAL & CATEGORICAL ANALYSIS ▼";
+    }
+}
+
+const WHAT_CHART_SELECTOR = "[data-what-chart]";
+const DEFAULT_START_MONTH = "2022-10";
+const DEFAULT_END_MONTH = "2024-09";
+
+const plotlyBaseLayout = {
+    paper_bgcolor: "rgba(0,0,0,0)",
+    plot_bgcolor: "rgba(0,0,0,0)",
+    font: {
+        color: "#ffffff",
+        family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
+    }
+};
+
+const plotlyConfig = {
+    responsive: true,
+    displaylogo: false,
+    displayModeBar: false,
+    staticPlot: false,
+    scrollZoom: false
+};
+
+const titleCase = (label = "") =>
+    label
+        .toLowerCase()
+        .replace(/\b([a-z])/g, (match) => match.toUpperCase());
+
+const cleanLabel = (label = "") =>
+    titleCase(label)
+        .replace(/\s{2,}/g, " ")
+        .trim();
+
+const hexToRGBA = (hex, alpha = 1) => {
+    const sanitized = hex.replace("#", "");
+    const bigint = parseInt(sanitized, 16);
+    const r = (bigint >> 16) & 255;
+    const g = (bigint >> 8) & 255;
+    const b = bigint & 255;
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
+const monthWithin = (month, start, end) =>
+    (!start || month >= start) && (!end || month <= end);
+
+const matchesCrimeFilter = (crime, filters) => {
+    if (filters.selectedCrime) {
+        return crime === filters.selectedCrime;
+    }
+    if (filters.crimeType && filters.crimeType !== "all") {
+        return crime === filters.crimeType;
+    }
+    return true;
+};
+
+const filterSlices = (slices, filters) => {
+    if (!slices?.length) {
+        return [];
+    }
+    return slices.filter(
+        (slice) =>
+            monthWithin(slice.month, filters.start, filters.end) &&
+            filters.sexes.has(slice.sex) &&
+            matchesCrimeFilter(slice.crime, filters)
+    );
+};
+
+const whatState = {
+    data: null,
+    filters: {
+        start: document.getElementById("startDate")?.value || DEFAULT_START_MONTH,
+        end: document.getElementById("endDate")?.value || DEFAULT_END_MONTH,
+        sexes: new Set(["M", "F", "O"]),
+        crimeType: "all",
+        selectedCrime: null,
+        weaponSort: document.getElementById("weaponSort")?.value || "default",
+        statusSort: document.getElementById("statusSort")?.value || "default"
+    }
+};
+
+function getSelectedSexSet() {
+    const set = new Set();
+    if (document.getElementById("filterMale")?.checked) set.add("M");
+    if (document.getElementById("filterFemale")?.checked) set.add("F");
+    if (document.getElementById("filterOther")?.checked) set.add("O");
+    return set;
+}
+
+async function initWhatVisuals() {
+    const placeholders = document.querySelectorAll(WHAT_CHART_SELECTOR);
+    if (!placeholders.length || typeof Plotly === "undefined") {
+        return;
+    }
+
+    placeholders.forEach((el) => {
+        el.innerHTML = '<div class="viz-note">Loading…</div>';
+    });
+
+    try {
+        const response = await fetch("./data/what_insights.json");
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        const data = await response.json();
+        whatState.data = data;
+        populateCrimeTypeOptions(data);
+        updateFiltersFromControls({ clearSelection: true, skipRender: true });
+        updateWhatFilterChip();
+        updateWhatCharts();
+    } catch (error) {
+        console.error("Failed to load categorical data", error);
+        placeholders.forEach((el) => {
+            el.innerHTML =
+                '<p class="viz-note">⚠ Unable to load categorical data.</p>';
+        });
+    }
+}
+
+function populateCrimeTypeOptions(data) {
+    const select = document.getElementById("crimeTypeFilter");
+    if (!select) return;
+    const existingOptions = [...select.querySelectorAll("option")];
+    existingOptions
+        .filter((option) => option.value && option.value !== "all")
+        .forEach((option) => option.remove());
+
+    const frag = document.createDocumentFragment();
+    (data?.crime_types?.totals ?? []).forEach((item) => {
+        const option = document.createElement("option");
+        option.value = item.crime;
+        option.textContent = cleanLabel(item.crime);
+        frag.appendChild(option);
+    });
+    select.appendChild(frag);
+}
+
+function updateFiltersFromControls({ clearSelection = false, skipRender = false } = {}) {
+    whatState.filters.start =
+        document.getElementById("startDate")?.value || whatState.filters.start;
+    whatState.filters.end =
+        document.getElementById("endDate")?.value || whatState.filters.end;
+    whatState.filters.sexes = getSelectedSexSet();
+    whatState.filters.crimeType =
+        document.getElementById("crimeTypeFilter")?.value || "all";
+    if (clearSelection) {
+        whatState.filters.selectedCrime = null;
+    }
+    whatState.filters.weaponSort =
+        document.getElementById("weaponSort")?.value || "default";
+    whatState.filters.statusSort =
+        document.getElementById("statusSort")?.value || "default";
+    if (!skipRender) {
+        updateWhatFilterChip();
+        updateWhatCharts();
+    }
+}
+
+function updateWhatFilterChip() {
+    const chip = document.getElementById("what-filter-chip");
+    const text = document.getElementById("what-filter-chip-text");
+    if (!chip || !text) return;
+    const activeCrime = whatState.filters.selectedCrime;
+    if (activeCrime) {
+        chip.style.display = "inline-flex";
+        text.textContent = `Crime filter: ${cleanLabel(activeCrime)}`;
+    } else {
+        chip.style.display = "none";
+        text.textContent = "";
+    }
+}
+
+function renderEmptyState(targetId, message) {
+    const el = document.getElementById(targetId);
+    if (!el) return;
+    if (window.Plotly && el.data) {
+        Plotly.purge(el);
+    }
+    el.innerHTML = `<p class="viz-note">${message}</p>`;
+}
+
+function setWhatLoading(isLoading) {
+    const overlay = document.getElementById("what-loading-overlay");
+    if (!overlay) return;
+    if (isLoading) {
+        overlay.classList.add("show");
+    } else {
+        overlay.classList.remove("show");
+    }
+}
+
+function updateWhatCharts() {
+    if (!whatState.data) return;
+    setWhatLoading(true);
+    const tasks = [
+        renderCrimeParetoFiltered,
+        renderCrimeSunburstFiltered,
+        renderWeaponPremiseFiltered,
+        renderStatusSankeyFiltered
+    ];
+    let taskIndex = 0;
+    let overlayTimer = setTimeout(() => setWhatLoading(false), 2000);
+
+    const runNext = () => {
+        if (taskIndex >= tasks.length) {
+            clearTimeout(overlayTimer);
+            setWhatLoading(false);
+            return;
+        }
+        const task = tasks[taskIndex++];
+        requestAnimationFrame(() => {
+            try {
+                task();
+            } finally {
+                runNext();
+            }
+        });
+    };
+
+    runNext();
+}
+
+function renderCrimeParetoFiltered() {
+    const filtered = filterSlices(whatState.data?.crime_types?.slices, whatState.filters);
+    if (!filtered.length) {
+        renderEmptyState("crime-type-chart", "No incidents for current filters.");
+        return;
+    }
+
+    const totalsMap = new Map();
+    filtered.forEach((slice) => {
+        totalsMap.set(slice.crime, (totalsMap.get(slice.crime) || 0) + slice.count);
+    });
+
+    const totals = Array.from(totalsMap.entries())
+        .map(([crime, count]) => ({ crime, count }))
+        .sort((a, b) => b.count - a.count);
+
+    const totalIncidents = totals.reduce((sum, item) => sum + item.count, 0);
+    const labels = totals.map((item) => cleanLabel(item.crime));
+    const counts = totals.map((item) => item.count);
+    const shares = totals.map((item) =>
+        totalIncidents ? Number(((item.count / totalIncidents) * 100).toFixed(2)) : 0
+    );
+    const cumulative = [];
+    counts.reduce((running, value, idx) => {
+        const next = running + value;
+        cumulative[idx] = Number(((next / totalIncidents) * 100).toFixed(2));
+        return next;
+    }, 0);
+
+    const highlightCrime =
+        whatState.filters.selectedCrime ||
+        (whatState.filters.crimeType !== "all" ? whatState.filters.crimeType : null);
+
+    const barColors = totals.map((item) =>
+        item.crime === highlightCrime ? "#ffd166" : "#ff5555"
+    );
+    const customdata = totals.map((item, idx) => [
+        item.crime,
+        idx + 1,
+        shares[idx]
+    ]);
+
+    const traces = [
+        {
+            type: "bar",
+            x: labels,
+            y: counts,
+            marker: { color: barColors },
+            name: "Incidents",
+            customdata,
+            hovertemplate:
+                "<b>%{customdata[0]}</b><br>Rank #%{customdata[1]}<br>%{y:,} incidents<br>Share %{customdata[2]}%<extra></extra>",
+            offsetgroup: "counts"
+        },
+        {
+            type: "scatter",
+            mode: "lines+markers",
+            x: labels,
+            y: cumulative,
+            yaxis: "y2",
+            name: "Cumulative %",
+            marker: { color: "#00c2ff" },
+            line: { color: "#00c2ff", width: 2 },
+            hovertemplate:
+                "<b>%{x}</b><br>Cumulative %{y:.1f}%<extra></extra>",
+            offsetgroup: "line"
+        }
+    ];
+
+    const layout = {
+        ...plotlyBaseLayout,
+        margin: { t: 20, b: 200, l: 70, r: 60 },
+        xaxis: {
+            tickangle: -45,
+            tickfont: { size: 11 },
+            automargin: true,
+            tickmode: "array",
+            tickvals: labels.map((_, idx) => idx),
+            ticktext: labels.map((label) =>
+                label.length > 26 ? `${label.slice(0, 26)}…` : label
+            )
+        },
+        yaxis: {
+            title: { text: "Incidents", standoff: 25 },
+            separatethousands: true,
+            zeroline: false
+        },
+        yaxis2: {
+            title: { text: "Cumulative %", standoff: 35 },
+            overlaying: "y",
+            side: "right",
+            range: [0, 100],
+            zeroline: false
+        },
+        legend: {
+            orientation: "h",
+            y: 1.06,
+            x: 0.5,
+            xanchor: "center",
+            font: { size: 11 }
+        },
+        height: 460
+    };
+
+    Plotly.react("crime-type-chart", traces, layout, plotlyConfig).then(() =>
+        attachParetoInteractions()
+    );
+}
+
+function attachParetoInteractions() {
+    const chartEl = document.getElementById("crime-type-chart");
+    if (!chartEl || typeof chartEl.on !== "function") return;
+    if (chartEl.__whatClickHandler) {
+        chartEl.removeListener?.("plotly_click", chartEl.__whatClickHandler);
+    }
+    if (chartEl.__whatDoubleHandler) {
+        chartEl.removeListener?.("plotly_doubleclick", chartEl.__whatDoubleHandler);
+    }
+
+    chartEl.__whatClickHandler = (event) => {
+        const crime = event?.points?.[0]?.customdata?.[0];
+        if (!crime) return;
+        const alreadySelected = whatState.filters.selectedCrime === crime;
+        whatState.filters.selectedCrime = alreadySelected ? null : crime;
+        updateWhatFilterChip();
+        updateWhatCharts();
+    };
+
+    chartEl.__whatDoubleHandler = () => {
+        if (!whatState.filters.selectedCrime) return false;
+        whatState.filters.selectedCrime = null;
+        updateWhatFilterChip();
+        updateWhatCharts();
+        return false;
+    };
+
+    chartEl.on("plotly_click", chartEl.__whatClickHandler);
+    chartEl.on("plotly_doubleclick", chartEl.__whatDoubleHandler);
+}
+
+function renderCrimeSunburstFiltered() {
+    const slices = filterSlices(whatState.data?.sunburst, whatState.filters);
+    if (!slices.length) {
+        renderEmptyState("crime-hierarchy-chart", "No hierarchy for current filters.");
+        return;
+    }
+
+    const partTotals = new Map();
+    const leafTotals = new Map();
+    let total = 0;
+
+    slices.forEach((slice) => {
+        const key = `${slice.part}|${slice.crime}`;
+        leafTotals.set(key, (leafTotals.get(key) || 0) + slice.count);
+        partTotals.set(slice.part, (partTotals.get(slice.part) || 0) + slice.count);
+        total += slice.count;
+    });
+
+    const labels = [];
+    const parents = [];
+    const values = [];
+    const customdata = [];
+
+    for (const [part, value] of partTotals.entries()) {
+        labels.push(part);
+        parents.push("");
+        values.push(value);
+        customdata.push(total ? Number(((value / total) * 100).toFixed(2)) : 0);
+    }
+
+    for (const [key, value] of leafTotals.entries()) {
+        const [part, crime] = key.split("|");
+        labels.push(cleanLabel(crime));
+        parents.push(part);
+        values.push(value);
+        customdata.push(total ? Number(((value / total) * 100).toFixed(2)) : 0);
+    }
+
+    const trace = [
+        {
+            type: "sunburst",
+            labels,
+            parents,
+            values,
+            branchvalues: "total",
+            maxdepth: 3,
+            sort: false,
+            hovertemplate:
+                "<b>%{label}</b><br>%{value:,} incidents<br>Share %{customdata:.2f}%<extra></extra>",
+            marker: { line: { color: "#111", width: 1 } },
+            customdata
+        }
+    ];
+
+    const layout = {
+        ...plotlyBaseLayout,
+        margin: { t: 20, b: 20, l: 20, r: 20 },
+        height: 420
+    };
+
+    Plotly.react("crime-hierarchy-chart", trace, layout, plotlyConfig);
+}
+
+function renderWeaponPremiseFiltered() {
+    const slices = filterSlices(
+        whatState.data?.weapon_premise?.slices,
+        whatState.filters
+    );
+    if (!slices.length) {
+        renderEmptyState(
+            "weapon-premise-chart",
+            "No weapon-premise combinations for current filters."
+        );
+        return;
+    }
+
+    const matrix = new Map();
+    const weaponTotals = new Map();
+    const premiseTotals = new Map();
+    let total = 0;
+
+    slices.forEach((slice) => {
+        const weaponMap = matrix.get(slice.weapon) || new Map();
+        weaponMap.set(slice.premise, (weaponMap.get(slice.premise) || 0) + slice.count);
+        matrix.set(slice.weapon, weaponMap);
+        weaponTotals.set(slice.weapon, (weaponTotals.get(slice.weapon) || 0) + slice.count);
+        premiseTotals.set(slice.premise, (premiseTotals.get(slice.premise) || 0) + slice.count);
+        total += slice.count;
+    });
+
+    let weaponOrder = [...(whatState.data?.categories?.weapons ?? [])];
+    let premiseOrder = [...(whatState.data?.categories?.premises ?? [])];
+    if (whatState.filters.weaponSort === "desc") {
+        weaponOrder.sort(
+            (a, b) => (weaponTotals.get(b) || 0) - (weaponTotals.get(a) || 0)
+        );
+        premiseOrder.sort(
+            (a, b) => (premiseTotals.get(b) || 0) - (premiseTotals.get(a) || 0)
+        );
+    }
+
+    const z = [];
+    const customdata = [];
+    weaponOrder.forEach((weapon) => {
+        const rowMap = matrix.get(weapon) || new Map();
+        const row = [];
+        const shareRow = [];
+        premiseOrder.forEach((premise) => {
+            const value = rowMap.get(premise) || 0;
+            row.push(value);
+            const share = total ? (value / total) * 100 : 0;
+            shareRow.push(Number(share.toFixed(2)));
+        });
+        z.push(row);
+        customdata.push(shareRow);
+    });
+
+    const flatValues = z.flat();
+    const sortedValues = [...flatValues].sort((a, b) => a - b);
+    const percentileIdx = Math.floor(sortedValues.length * 0.8);
+    let colorCap = sortedValues[percentileIdx] || sortedValues[sortedValues.length - 1] || 1;
+    if (colorCap <= 0) {
+        colorCap = 1;
+    }
+
+    const intermediateCap = colorCap * 0.5;
+
+    const trace = [
+        {
+            type: "heatmap",
+            z,
+            x: premiseOrder.map((prem) => cleanLabel(prem)),
+            y: weaponOrder.map((weapon) => cleanLabel(weapon)),
+            colorscale: "Inferno",
+            hoverongaps: false,
+            customdata,
+            zmin: 0,
+            zmax: colorCap,
+            zmid: intermediateCap,
+            colorbar: {
+                title: "Incidents",
+                tickformat: "~s"
+            },
+            hovertemplate:
+                "Premises: %{x}<br>Weapon: %{y}<br>%{z:,} incidents<br>Share %{customdata:.2f}%<extra></extra>"
+        }
+    ];
+
+    const layout = {
+        ...plotlyBaseLayout,
+        margin: { t: 30, b: 120, l: 140, r: 10 },
+        xaxis: {
+            tickangle: -55,
+            tickfont: { size: 11 },
+            automargin: true
+        },
+        height: 480
+    };
+
+    Plotly.react("weapon-premise-chart", trace, layout, plotlyConfig);
+}
+
+function renderStatusSankeyFiltered() {
+    const slices = filterSlices(
+        whatState.data?.status_flow?.slices,
+        whatState.filters
+    );
+    if (!slices.length) {
+        renderEmptyState(
+            "status-sankey-chart",
+            "No status flow for current filters."
+        );
+        return;
+    }
+
+    const flows = [];
+    const crimeTotals = new Map();
+    const statusTotals = new Map();
+    let total = 0;
+
+    slices.forEach((slice) => {
+        flows.push(slice);
+        crimeTotals.set(slice.crime, (crimeTotals.get(slice.crime) || 0) + slice.count);
+        statusTotals.set(slice.status, (statusTotals.get(slice.status) || 0) + slice.count);
+        total += slice.count;
+    });
+
+    const baseCrimeOrder = whatState.data?.categories?.crimes ?? [];
+    const selectedCrime = whatState.filters.selectedCrime;
+    let crimeOrder = [];
+    if (selectedCrime && crimeTotals.get(selectedCrime)) {
+        crimeOrder = [selectedCrime];
+    } else {
+        crimeOrder = baseCrimeOrder
+            .map((crime) => ({ crime, count: crimeTotals.get(crime) || 0 }))
+            .filter((item) => item.count > 0)
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 6)
+            .map((item) => item.crime);
+    }
+    if (!crimeOrder.length) {
+        renderEmptyState(
+            "status-sankey-chart",
+            "No status flow for current filters."
+        );
+        return;
+    }
+    const baseStatusOrder = whatState.data?.categories?.statuses ?? [];
+    let statusOrder = baseStatusOrder.filter((status) => statusTotals.get(status));
+    if (whatState.filters.statusSort === "desc") {
+        statusOrder.sort(
+            (a, b) => (statusTotals.get(b) || 0) - (statusTotals.get(a) || 0)
+        );
+    }
+    if (!selectedCrime) {
+        statusOrder = statusOrder.slice(0, 5);
+    }
+
+    const labels = [];
+    const crimeIndex = new Map();
+    const statusIndex = new Map();
+
+    crimeOrder.forEach((crime) => {
+        crimeIndex.set(crime, labels.length);
+        labels.push(cleanLabel(crime));
+    });
+
+    statusOrder.forEach((status) => {
+        statusIndex.set(status, labels.length);
+        labels.push(cleanLabel(status));
+    });
+
+    const source = [];
+    const target = [];
+    const value = [];
+    const shares = [];
+
+    flows.forEach((flow) => {
+        const sourceIdx = crimeIndex.get(flow.crime);
+        const targetIdx = statusIndex.get(flow.status);
+        if (sourceIdx === undefined || targetIdx === undefined) return;
+        source.push(sourceIdx);
+        target.push(targetIdx);
+        value.push(flow.count);
+        const share = total ? (flow.count / total) * 100 : 0;
+        shares.push(Number(share.toFixed(2)));
+    });
+
+    const crimePalette = ["#ff6b6b", "#ffd166", "#06d6a0", "#118ab2", "#9b5de5", "#f15bb5"];
+    const statusPalette = ["#4cc9f0", "#4895ef", "#560bad", "#b5179e", "#ff9770", "#00bbf0"];
+    const nodeColors = labels.map((_, idx) => {
+        if (idx < crimeOrder.length) {
+            return crimePalette[idx % crimePalette.length];
+        }
+        const statusIdx = idx - crimeOrder.length;
+        return statusPalette[statusIdx % statusPalette.length];
+    });
+
+    const trace = [
+        {
+            type: "sankey",
+            orientation: "h",
+            node: {
+                label: labels,
+                pad: 15,
+                thickness: 18,
+                color: nodeColors,
+                line: { color: "#111", width: 1 },
+                font: { color: "#ffffff" }
+            },
+            link: {
+                source,
+                target,
+                value,
+                customdata: shares,
+                color: source.map((srcIdx) => hexToRGBA(nodeColors[srcIdx], 0.45)),
+                hovertemplate:
+                    "%{source.label} → %{target.label}<br>%{value:,} incidents<br>Share %{customdata:.2f}%<extra></extra>"
+            }
+        }
+    ];
+
+    const layout = {
+        ...plotlyBaseLayout,
+        margin: { t: 20, b: 20, l: 20, r: 20 },
+        height: 420
+    };
+
+    Plotly.react("status-sankey-chart", trace, layout, plotlyConfig);
+}
+
+document.addEventListener("DOMContentLoaded", initWhatVisuals);
+
+
+document.getElementById('applyFilters')?.addEventListener('click', () => {
+    updateFiltersFromControls({ clearSelection: true });
+});
+
+document.getElementById('resetFilters')?.addEventListener('click', () => {
+    document.getElementById('startDate').value = DEFAULT_START_MONTH;
+    document.getElementById('endDate').value = DEFAULT_END_MONTH;
+    document.getElementById('crimeTypeFilter').value = 'all';
+    document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = true);
+    document.getElementById('weaponSort').value = 'default';
+    document.getElementById('statusSort').value = 'default';
+    updateFiltersFromControls({ clearSelection: true });
+});
+
+document.getElementById('weaponSort')?.addEventListener('change', (event) => {
+    whatState.filters.weaponSort = event.target.value;
+    updateWhatCharts();
+});
+
+document.getElementById('statusSort')?.addEventListener('change', (event) => {
+    whatState.filters.statusSort = event.target.value;
+    updateWhatCharts();
+});
+
+document.getElementById('clearWhatFilter')?.addEventListener('click', () => {
+    whatState.filters.selectedCrime = null;
+    updateWhatFilterChip();
+    updateWhatCharts();
+});
+</script>
+
+
+</body>
+</html>
+const hexToRGBA = (hex, alpha = 1) => {
+    const sanitized = hex.replace("#", "");
+    const bigint = parseInt(sanitized, 16);
+    const r = (bigint >> 16) & 255;
+    const g = (bigint >> 8) & 255;
+    const b = bigint & 255;
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
