@@ -992,8 +992,6 @@ function updateFiltersFromControls({ clearSelection = false, skipRender = false 
     whatState.filters.end =
         document.getElementById("endDate")?.value || whatState.filters.end;
     whatState.filters.sexes = getSelectedSexSet();
-    whatState.filters.crimeType =
-        document.getElementById("crimeTypeFilter")?.value || "all";
     if (clearSelection) {
         whatState.filters.selectedCrime = null;
     }
@@ -1058,7 +1056,15 @@ function updateWhatCharts() {
 }
 
 function renderCrimeParetoFiltered() {
-    const filtered = filterSlices(whatState.data?.crime_types?.slices, whatState.filters);
+    const filtersForPareto = {
+        ...whatState.filters,
+        // Keep the selection visual highlight only; don't filter the Pareto bars down
+        selectedCrime: null
+    };
+    const filtered = filterSlices(
+        whatState.data?.crime_types?.slices,
+        filtersForPareto
+    );
     if (!filtered.length) {
         renderEmptyState("crime-type-chart", "No incidents for current filters.");
         return;
@@ -1410,6 +1416,10 @@ function renderStatusSankeyFiltered() {
     if (whatState.filters.statusSort === "desc") {
         statusOrder.sort(
             (a, b) => (statusTotals.get(b) || 0) - (statusTotals.get(a) || 0)
+        );
+    } else {
+        statusOrder.sort((a, b) =>
+            cleanLabel(a).localeCompare(cleanLabel(b), undefined, { sensitivity: "base" })
         );
     }
     if (!selectedCrime) {
