@@ -237,29 +237,6 @@
             position: relative;
         }
 
-        .loading-overlay {
-            position: absolute;
-            inset: 0;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            background: rgba(0, 0, 0, 0.6);
-            z-index: 5;
-            font-size: 1em;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        .loading-overlay.show {
-            display: flex;
-        }
-
-        .loading-overlay span {
-            padding: 12px 20px;
-            border: 1px solid #ffffff;
-            color: #ffffff;
-        }
-
         .filter-chip {
             display: inline-flex;
             align-items: center;
@@ -284,9 +261,10 @@
         }
 
         .chart {
-            width: 100%;
+            width: 92%;
             min-height: 420px;
             height: 100%;
+            margin: 0 auto;
         }
 
         .viz-icon {
@@ -731,24 +709,18 @@ Crime in the United States affects community safety, policy, and urban planning,
                 </div>
 			
                 <div class="what-grid-wrapper">
-                    <div id="what-loading-overlay" class="loading-overlay" aria-live="polite">
-                        <span>Loading…</span>
-                    </div>
 			        <div class="visualizations-grid">
 			            <div class="viz-card">
 			                <h3>Crime Types Pareto</h3>
-			                <p class="viz-note">Hover to see cumulative share; select legend items to hide/show series.</p>
 			                <div id="crime-type-chart" class="chart" data-what-chart aria-label="Top crime types Pareto chart"></div>
 			            </div>
 			            <div class="viz-card">
 			                <h3>Severity to Offense Drilldown</h3>
-			                <p class="viz-note">Click Part 1/2 arcs to zoom into specific crime descriptions.</p>
 			                <div id="crime-hierarchy-chart" class="chart" data-what-chart aria-label="Crime hierarchy sunburst"></div>
 			            </div>
 			            <div class="viz-card">
 			                <h3>Weapons × Premises</h3>
-			                <div class="viz-note" style="display:flex; justify-content:space-between; gap:10px; align-items:center;">
-                                <span>Hover matrix cells to surface the most common situational pairings.</span>
+			                <div style="display:flex; justify-content:flex-end; gap:10px; align-items:center; margin-bottom:12px;">
                                 <label style="font-size:0.8em;">Sort
                                     <select id="weaponSort" class="viz-select">
                                         <option value="default">Default</option>
@@ -760,8 +732,7 @@ Crime in the United States affects community safety, policy, and urban planning,
 			            </div>
 			            <div class="viz-card">
 			                <h3>Status Pipeline</h3>
-                        <div class="viz-note" style="display:flex; justify-content:space-between; gap:10px; align-items:center;">
-                                <span>Trace how the selected or leading crimes flow into key LAPD status codes.</span>
+                        <div style="display:flex; justify-content:flex-end; gap:10px; align-items:center; margin-bottom:12px;">
                                 <label style="font-size:0.8em;">Status order
                                     <select id="statusSort" class="viz-select">
                                         <option value="default">Default</option>
@@ -974,7 +945,7 @@ async function initWhatVisuals() {
     }
 
     placeholders.forEach((el) => {
-        el.innerHTML = '<div class="viz-note">Loading…</div>';
+        el.innerHTML = "";
     });
 
     try {
@@ -1059,19 +1030,8 @@ function renderEmptyState(targetId, message) {
     el.innerHTML = `<p class="viz-note">${message}</p>`;
 }
 
-function setWhatLoading(isLoading) {
-    const overlay = document.getElementById("what-loading-overlay");
-    if (!overlay) return;
-    if (isLoading) {
-        overlay.classList.add("show");
-    } else {
-        overlay.classList.remove("show");
-    }
-}
-
 function updateWhatCharts() {
     if (!whatState.data) return;
-    setWhatLoading(true);
     const tasks = [
         renderCrimeParetoFiltered,
         renderCrimeSunburstFiltered,
@@ -1079,12 +1039,9 @@ function updateWhatCharts() {
         renderStatusSankeyFiltered
     ];
     let taskIndex = 0;
-    let overlayTimer = setTimeout(() => setWhatLoading(false), 2000);
 
     const runNext = () => {
         if (taskIndex >= tasks.length) {
-            clearTimeout(overlayTimer);
-            setWhatLoading(false);
             return;
         }
         const task = tasks[taskIndex++];
@@ -1171,7 +1128,7 @@ function renderCrimeParetoFiltered() {
 
     const layout = {
         ...plotlyBaseLayout,
-        margin: { t: 20, b: 200, l: 70, r: 60 },
+        margin: { t: 30, b: 200, l: 70, r: 60 },
         xaxis: {
             tickangle: -45,
             tickfont: { size: 11 },
@@ -1192,7 +1149,8 @@ function renderCrimeParetoFiltered() {
             overlaying: "y",
             side: "right",
             range: [0, 100],
-            zeroline: false
+            zeroline: false,
+            showgrid: false
         },
         legend: {
             orientation: "h",
@@ -1201,7 +1159,7 @@ function renderCrimeParetoFiltered() {
             xanchor: "center",
             font: { size: 11 }
         },
-        height: 460
+        height: 480
     };
 
     Plotly.react("crime-type-chart", traces, layout, plotlyConfig).then(() =>
@@ -1296,8 +1254,8 @@ function renderCrimeSunburstFiltered() {
 
     const layout = {
         ...plotlyBaseLayout,
-        margin: { t: 20, b: 20, l: 20, r: 20 },
-        height: 420
+        margin: { t: 40, b: 20, l: 20, r: 20 },
+        height: 380
     };
 
     Plotly.react("crime-hierarchy-chart", trace, layout, plotlyConfig);
@@ -1396,7 +1354,7 @@ function renderWeaponPremiseFiltered() {
             tickfont: { size: 11 },
             automargin: true
         },
-        height: 480
+        height: 560
     };
 
     Plotly.react("weapon-premise-chart", trace, layout, plotlyConfig);
@@ -1472,6 +1430,27 @@ function renderStatusSankeyFiltered() {
         labels.push(cleanLabel(status));
     });
 
+    const spreadPositions = (count) => {
+        if (!count) return [];
+        if (count === 1) return [0.5];
+        const step = 1 / count;
+        return Array.from({ length: count }, (_, idx) => step * idx + step / 2);
+    };
+
+    const crimeYPositions = spreadPositions(crimeOrder.length);
+    const statusYPositions = spreadPositions(statusOrder.length);
+    const nodeX = [];
+    const nodeY = [];
+
+    crimeYPositions.forEach((pos) => {
+        nodeX.push(0.05);
+        nodeY.push(pos);
+    });
+    statusYPositions.forEach((pos) => {
+        nodeX.push(0.95);
+        nodeY.push(pos);
+    });
+
     const source = [];
     const target = [];
     const value = [];
@@ -1504,6 +1483,8 @@ function renderStatusSankeyFiltered() {
             orientation: "h",
             node: {
                 label: labels,
+                x: nodeX,
+                y: nodeY,
                 pad: 15,
                 thickness: 18,
                 color: nodeColors,
@@ -1524,8 +1505,8 @@ function renderStatusSankeyFiltered() {
 
     const layout = {
         ...plotlyBaseLayout,
-        margin: { t: 20, b: 20, l: 20, r: 20 },
-        height: 420
+        margin: { t: 110, b: 50, l: 50, r: 50 },
+        height: 560
     };
 
     Plotly.react("status-sankey-chart", trace, layout, plotlyConfig);
