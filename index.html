@@ -199,6 +199,49 @@
             transform: translateY(-5px);
         }
 
+        .viz-hint {
+            font-size: 0.8em;
+            color: #cccccc;
+            margin-top: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .what-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .what-help-button {
+            padding: 6px 14px;
+            border: 1px solid #888;
+            background: transparent;
+            color: #fff;
+            font-size: 0.8em;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: border-color 0.2s ease;
+        }
+
+        .what-help-button[aria-expanded="true"] {
+            border-color: #fff;
+        }
+
+        .what-help-panel {
+            display: none;
+            margin-top: 12px;
+            padding: 12px 16px;
+            border: 1px solid #555;
+            background: rgba(255, 255, 255, 0.05);
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        .what-help-panel ul {
+            padding-left: 20px;
+        }
+
         .viz-card h3 {
             font-size: 1.5em;
             margin-bottom: 15px;
@@ -692,8 +735,20 @@ Crime in the United States affects community safety, policy, and urban planning,
 			    </div>
 			</section>
 
-			<section class="section">
-			    <h2>WHAT: CATEGORICAL ANALYSIS</h2>
+            <section class="section">
+                <div class="what-header">
+			        <h2>WHAT: CATEGORICAL ANALYSIS</h2>
+                    <button id="whatHelpToggle" class="what-help-button" aria-expanded="false" aria-controls="whatHelpPanel">
+                        HOW TO INTERACT
+                    </button>
+                </div>
+                <div id="whatHelpPanel" class="what-help-panel" role="status" aria-live="polite">
+                    <ul>
+                        <li>Click bars to filter across the section; double-click the plot background to reset.</li>
+                        <li>Use the sort menus to reorder heatmap axes or status nodes for easier comparisons.</li>
+                        <li>Hover any mark to read precise counts, rankings, and shares before discussing insights.</li>
+                    </ul>
+                </div>
 			
 			    <div class="description">
 			        <ul>
@@ -713,10 +768,12 @@ Crime in the United States affects community safety, policy, and urban planning,
 			            <div class="viz-card">
 			                <h3>Crime Types Pareto</h3>
 			                <div id="crime-type-chart" class="chart" data-what-chart aria-label="Top crime types Pareto chart"></div>
+                            <p class="viz-hint">Click any bar to spotlight that crime across all charts; double-click the plot background or use the filter chip to clear.</p>
 			            </div>
 			            <div class="viz-card">
 			                <h3>Severity to Offense Drilldown</h3>
 			                <div id="crime-hierarchy-chart" class="chart" data-what-chart aria-label="Crime hierarchy sunburst"></div>
+                            <p class="viz-hint">Hover to see each Part → Crime share; selections from the Pareto view automatically emphasize the chosen crime here.</p>
 			            </div>
 			            <div class="viz-card">
 			                <h3>Weapons × Premises</h3>
@@ -729,6 +786,7 @@ Crime in the United States affects community safety, policy, and urban planning,
                                 </label>
                             </div>
 			                <div id="weapon-premise-chart" class="chart" data-what-chart aria-label="Weapon versus premises heatmap"></div>
+                            <p class="viz-hint">Use the Sort control to reorder rows/columns by current totals and hover cells to inspect specific weapon–premise volumes.</p>
 			            </div>
 			            <div class="viz-card">
 			                <h3>Status Pipeline</h3>
@@ -741,6 +799,7 @@ Crime in the United States affects community safety, policy, and urban planning,
                                 </label>
                             </div>
 			                <div id="status-sankey-chart" class="chart" data-what-chart aria-label="Crime status Sankey diagram"></div>
+                            <p class="viz-hint">Switch Status order to change node sorting; when a Pareto bar is selected this view filters to that crime’s outcome flow.</p>
 			            </div>
 			        </div>
                 </div>
@@ -1554,16 +1613,18 @@ document.getElementById('clearWhatFilter')?.addEventListener('click', () => {
     updateWhatFilterChip();
     updateWhatCharts();
 });
+
+const whatHelpButton = document.getElementById("whatHelpToggle");
+const whatHelpPanel = document.getElementById("whatHelpPanel");
+whatHelpButton?.addEventListener("click", () => {
+    const expanded = whatHelpButton.getAttribute("aria-expanded") === "true";
+    whatHelpButton.setAttribute("aria-expanded", String(!expanded));
+    if (whatHelpPanel) {
+        whatHelpPanel.style.display = expanded ? "none" : "block";
+    }
+});
 </script>
 
 
 </body>
 </html>
-const hexToRGBA = (hex, alpha = 1) => {
-    const sanitized = hex.replace("#", "");
-    const bigint = parseInt(sanitized, 16);
-    const r = (bigint >> 16) & 255;
-    const g = (bigint >> 8) & 255;
-    const b = bigint & 255;
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-};
