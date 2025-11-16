@@ -704,106 +704,55 @@ Crime in the United States affects community safety, policy, and urban planning,
             </section>
 
 			<section class="section">
-			    <h2>When: TEMPORAL ANALYSIS</h2>
-			
-			    <div class="description">
-			        <ul>
-			            <li><strong>Hourly patterns:</strong> Peak criminal activity occurs around midday (12:00 PM), with lower crime rates between midnight and 7:00 AM, contrary to common perceptions about nighttime danger.</li>
-			            <li><strong>Weekly patterns:</strong> Fridays show the highest incidence of reported crimes.</li>
-			            <li><strong>Monthly patterns:</strong> January shows the highest crime levels.</li>
-			            <li><strong>Yearly trends:</strong> Crime incidents increased from 2020 through early 2022, peaked in 2022, then dramatically decreased beginning in 2024.</li>
-			        </ul>
-			    </div>
-			
-			    <div class="visualizations-grid">
-			        <div class="viz-card">
-			            <h3>Hourly Crime Patterns</h3>
-			            <img src="./images/hourly.jpg" alt="Hourly crime chart" style="width:100%; height:auto;">
-			        </div>
-			        <div class="viz-card">
-			            <h3>Weekly Crime Patterns</h3>
-			            <img src="./images/weekly.jpg" alt="Weekly crime chart" style="width:100%; height:auto;">
-			        </div>
-			        <div class="viz-card">
-			            <h3>Monthly Crime Patterns</h3>
-			            <img src="./images/monthly.jpg" alt="Monthly crime chart" style="width:100%; height:auto;">
-			        </div>
-			        <div class="viz-card">
-			            <h3>Yearly Crime Trends</h3>
-			            <img src="./images/yearly.jpg" alt="Yearly crime chart" style="width:100%; height:auto;">
-			        </div>
-			    </div>
+                <h2>When: TEMPORAL ANALYSIS</h2>
+
+                <div class="description">
+                    <p style="margin-bottom: 20px;">Interactive temporal analysis revealing crime patterns across multiple time dimensions. Explore hourly, weekly, monthly, and yearly trends with dynamic filtering and cross-chart interactions.</p>
+                    <ul>
+                        <li><strong>Hourly patterns:</strong> Peak criminal activity occurs around midday (12:00 PM), with lower crime rates between midnight and 7:00 AM, contrary to common perceptions about nighttime danger.</li>
+                        <li><strong>Weekly patterns:</strong> Fridays show the highest incidence of reported crimes.</li>
+                        <li><strong>Monthly patterns:</strong> January shows the highest crime levels.</li>
+                        <li><strong>Yearly trends:</strong> Crime incidents increased from 2020 through early 2022, peaked in 2022, then dramatically decreased beginning in 2024.</li>
+                    </ul>
+                </div>
+
+                <div class="map-container" style="margin-top: 30px;">
+                    <iframe src="when_temporal_analysis.html" 
+                            frameborder="0" 
+                            style="width: 100%; height: 800px; border: 2px solid #555555; background: #000000;">
+                    </iframe>
+                    <div class="map-overlay">
+                        <a href="when_temporal_analysis.html" target="_blank" class="fullscreen-btn">
+                            >> OPEN FULL SCREEN <<
+                        </a>
+                    </div>
+                </div>
 			</section>
 
             <section class="section">
-                <div class="what-header">
-			        <h2>WHAT: CATEGORICAL ANALYSIS</h2>
-                    <button id="whatHelpToggle" class="what-help-button" aria-expanded="false" aria-controls="whatHelpPanel">
-                        HOW TO INTERACT
-                    </button>
-                </div>
-                <div id="whatHelpPanel" class="what-help-panel" role="status" aria-live="polite">
+                <h2>WHAT: CATEGORICAL ANALYSIS</h2>
+
+                <div class="description">
+                    <p style="margin-bottom: 20px;">Fully interactive categorical console powered by Plotly, featuring linked Pareto, hierarchy, heatmap, and Sankey views with shared filters.</p>
                     <ul>
-                        <li>Click bars to filter across the section; double-click the plot background to reset.</li>
-                        <li>Use the sort menus to reorder heatmap axes or status nodes for easier comparisons.</li>
-                        <li>Hover any mark to read precise counts, rankings, and shares before discussing insights.</li>
+                        <li><strong>Interactive filters:</strong> Date range, victim sex, and crime-type menu update every chart simultaneously.</li>
+                        <li><strong>Linked selections:</strong> Clicking Pareto bars propagates to the sunburst, heatmap, and pipeline views.</li>
+                        <li><strong>Adaptive layouts:</strong> Sorting controls for the heatmap and Sankey support rapid comparisons.</li>
                     </ul>
                 </div>
-			
-			    <div class="description">
-			        <ul>
-			            <li><strong>Crime types:</strong> Hover the Pareto bars to see how quickly the top incidents accumulate.</li>
-			            <li><strong>Hierarchies:</strong> Use the sunburst to drill from Part 1/Part 2 down to the leading offense descriptions.</li>
-			            <li><strong>Weapons & scenes:</strong> The heatmap highlights common weapon–premises pairings.</li>
-			            <li><strong>Case pipeline:</strong> The Sankey lays out how major offense types flow into status outcomes.</li>
-			        </ul>
-			    </div>
-                <div id="what-filter-chip" class="filter-chip" style="display:none;" aria-live="polite">
-                    <span id="what-filter-chip-text"></span>
-                    <button type="button" id="clearWhatFilter" aria-label="Clear linked filter">×</button>
+
+                <div class="map-container" style="margin-top: 30px;">
+                    <iframe src="what_categorical_analysis.html" 
+                            frameborder="0" 
+                            style="width: 100%; height: 1100px; border: 2px solid #555555; background: #000000;">
+                    </iframe>
+                    <div class="map-overlay">
+                        <a href="what_categorical_analysis.html" target="_blank" class="fullscreen-btn">
+                            >> OPEN FULL SCREEN <<
+                        </a>
+                    </div>
                 </div>
-			
-                <div class="what-grid-wrapper">
-			        <div class="visualizations-grid">
-			            <div class="viz-card">
-			                <h3>Crime Types Pareto</h3>
-			                <div id="crime-type-chart" class="chart" data-what-chart aria-label="Top crime types Pareto chart"></div>
-                            <p class="viz-hint">Click any bar to spotlight that crime across all charts; double-click the plot background or use the filter chip to clear.</p>
-			            </div>
-			            <div class="viz-card">
-			                <h3>Severity to Offense Drilldown</h3>
-			                <div id="crime-hierarchy-chart" class="chart" data-what-chart aria-label="Crime hierarchy sunburst"></div>
-                            <p class="viz-hint">Hover to see each Part → Crime share; selections from the Pareto view automatically emphasize the chosen crime here.</p>
-			            </div>
-			            <div class="viz-card">
-			                <h3>Weapons × Premises</h3>
-			                <div style="display:flex; justify-content:flex-end; gap:10px; align-items:center; margin-bottom:12px;">
-                                <label style="font-size:0.8em;">Sort
-                                    <select id="weaponSort" class="viz-select">
-                                        <option value="default">Default</option>
-                                        <option value="desc">By total</option>
-                                    </select>
-                                </label>
-                            </div>
-			                <div id="weapon-premise-chart" class="chart" data-what-chart aria-label="Weapon versus premises heatmap"></div>
-                            <p class="viz-hint">Use the Sort control to reorder rows/columns by current totals and hover cells to inspect specific weapon–premise volumes.</p>
-			            </div>
-			            <div class="viz-card">
-			                <h3>Status Pipeline</h3>
-                        <div style="display:flex; justify-content:flex-end; gap:10px; align-items:center; margin-bottom:12px;">
-                                <label style="font-size:0.8em;">Status order
-                                    <select id="statusSort" class="viz-select">
-                                        <option value="default">Default</option>
-                                        <option value="desc">By total</option>
-                                    </select>
-                                </label>
-                            </div>
-			                <div id="status-sankey-chart" class="chart" data-what-chart aria-label="Crime status Sankey diagram"></div>
-                            <p class="viz-hint">Switch Status order to change node sorting; when a Pareto bar is selected this view filters to that crime’s outcome flow.</p>
-			            </div>
-			        </div>
-                </div>
-				</section>
+			</section>
 				
 			<section class="section">
 				    <h2>WHO: DEMOGRAPHICS ANALYSIS</h2>
